@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Mic, ShieldCheck, Thermometer, Lightbulb, Tv, Settings, Lock } from "lucide-react";
+import { motion } from "framer-motion";
+
+const SmartHomeUI = () => {
+  const [light, setLight] = useState(false);
+  const [temperature, setTemperature] = useState(22);
+  const [security, setSecurity] = useState("Disarmed");
+  const [automation, setAutomation] = useState(false);
+  const [tv, setTv] = useState(false);
+  const [doorLock, setDoorLock] = useState(true);
+  const [intruderAlert, setIntruderAlert] = useState(false);
+  const [voiceCommand, setVoiceCommand] = useState("");
+
+  useEffect(() => {
+    if (voiceCommand) {
+      handleVoiceCommand(voiceCommand);
+    }
+  }, [voiceCommand]);
+
+  const handleVoiceCommand = (command) => {
+    if (command.includes("light")) setLight(!light);
+    if (command.includes("temperature")) setTemperature(temperature + 1);
+    if (command.includes("security"))
+      setSecurity(security === "Disarmed" ? "Armed" : "Disarmed");
+    if (command.includes("automation")) setAutomation(!automation);
+    if (command.includes("TV")) setTv(!tv);
+    if (command.includes("lock")) setDoorLock(!doorLock);
+  };
+
+  useEffect(() => {
+    if (!doorLock && security === "Armed") {
+      setIntruderAlert(true);
+      alert("Intruder Alert! Unauthorized entry detected!");
+    } else {
+      setIntruderAlert(false);
+    }
+  }, [doorLock, security]);
+
+  const getTemperatureColor = (temp) => {
+    if (temp <= 18) return "text-blue-500";
+    if (temp > 18 && temp <= 24) return "text-green-500";
+    return "text-red-500";
+  };
+
+  return (
+    <div className="relative p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Light Control */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <Lightbulb className={`w-10 h-10 ${light ? "text-yellow-400" : "text-gray-400"}`} />
+          <Button onClick={() => setLight(!light)} className="mt-2">
+            {light ? "Turn Off" : "Turn On"} Light
+          </Button>
+        </CardContent>
+      </Card>
+      
+      {/* Temperature Control */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <Thermometer className={`w-10 h-10 ${getTemperatureColor(temperature)}`} />
+          <Slider min={16} max={30} value={[temperature]} onValueChange={(val) => setTemperature(val[0])} />
+          <p className="mt-2">Temperature: {temperature}°C</p>
+        </CardContent>
+      </Card>
+
+      {/* Security Control */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <ShieldCheck className={`w-10 h-10 ${security === "Armed" ? "text-green-500" : "text-red-500"}`} />
+          <Button onClick={() => setSecurity(security === "Disarmed" ? "Armed" : "Disarmed")} className="mt-2">
+            {security === "Armed" ? "Disarm" : "Arm"} Security
+          </Button>
+        </CardContent>
+      </Card>
+      
+      {/* Automation Control */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <Settings className={`w-10 h-10 ${automation ? "text-green-500" : "text-gray-400"}`} />
+          <motion.div whileTap={{ scale: 1.1 }}>
+            <Button onClick={() => setAutomation(!automation)}>
+              {automation ? "Disable" : "Enable"} Automation
+            </Button>
+          </motion.div>
+        </CardContent>
+      </Card>
+
+      {/* TV Control */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <Tv className={`w-10 h-10 ${tv ? "text-blue-500" : "text-gray-400"}`} />
+          <Button onClick={() => setTv(!tv)} className="mt-2">
+            {tv ? "Turn Off" : "Turn On"} TV
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Door Lock & Intruder Alert */}
+      <Card>
+        <CardContent className="flex flex-col items-center p-4">
+          <Lock className={`w-10 h-10 ${doorLock ? "text-green-500" : "text-red-500"}`} />
+          <Button onClick={() => setDoorLock(!doorLock)} className="mt-2">
+            {doorLock ? "Unlock Door" : "Lock Door"}
+          </Button>
+          {intruderAlert && <p className="text-red-500 mt-2 font-bold">Intruder Alert!</p>}
+        </CardContent>
+      </Card>
+
+      {/* Voice Control */}
+      <Card className="col-span-2">
+        <CardContent className="flex flex-col items-center p-4">
+          <Mic className="w-10 h-10 text-purple-500" />
+          <Button onClick={() => setVoiceCommand(prompt("Enter voice command"))} className="mt-2">
+            Use Voice Command
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default SmartHomeUI;
